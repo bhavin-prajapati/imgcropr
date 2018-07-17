@@ -9,6 +9,7 @@
   "author": "Bhavin Prajapati",
   "dependencies": {
     "aws-sdk": "^2.64.0",
+    "bluebird": "^3.5.1",
     "body-parser": "^1.17.2",
     "express": "^4.15.2",
     "express-fileupload": "^0.4.0",
