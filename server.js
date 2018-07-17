@@ -18,18 +18,23 @@ const splitImage = function (filename, extention, timestamp) {
       .metadata()
       .then(function (metadata) {
         console.log(metadata);
-        let numImage = metadata.width / metadata.height;
-        for(let i = 0; i < )
-        return image
-          .extract({ left: 0, top: 0, width: 666, height: 666 })
-          .toFile(`./uploadedImages/${filename}_${timestamp}_1.${extention}`);
-      })
-      .then(function (info, err) {
-        console.log(err);
-        if (err) {
-          reject({ status: "failed" });
+        let numImage = Math.floor(metadata.width / metadata.height);
+
+        let croppingPromises = []
+        for (let i = 0; i < numImage; i++) {
+          croppingPromises.push(image
+            .extract({ left: i * metadata.height, top: 0, width: metadata.height, height: metadata.height })
+            .toFile(`./uploadedImages/${filename}_${timestamp}_${i+1}.${extention}`));
         }
-        resolve({ status: "success" });
+
+        Promise.all(croppingPromises)
+          .then(function () {
+            console.log("all the files were created");
+            resolve({ status: "success" });
+          })
+          .catch(function () {
+            reject({ status: "failed" });
+          });
       });
   });
 };
