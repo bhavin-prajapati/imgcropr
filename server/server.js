@@ -1,15 +1,29 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const fileUpload = require('express-fileupload');
 const app = express();
 const sharp = require('sharp');
 const Promise = require("bluebird");
+
 
 var staticPath = path.join(__dirname, '/uploadedImages');
 app.use(express.static(staticPath));
 
 // default options
 app.use(fileUpload());
+
+// CORS
+if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'acceptance') {
+  app.use((req, res, next) => {
+      res.removeHeader('x-powered-by');
+      res.header('Access-Control-Allow-Origin', 'http://localhost:8000');
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+      res.header('Access-Control-Allow-Credentials', 'true');
+      res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+      next();
+  });
+}
 
 const splitImage = function (id, extention = 'jpg') {
   return new Promise(function (resolve, reject) {
@@ -62,16 +76,26 @@ app.post('/upload', function (req, res) {
   });
 });
 
-app.post('/crop', function (req, res) {
-  if (!req.query.image)
-    return res.status(400).send('Unknown image');
-
-  splitImage(getFilename(req.query.image)).then(function(result) {
-    res.redirect(`/crop/result?${req.query.image}`);
-  });
+app.get('/crop/:results?', function (req, res) {
+  let results = req.params.results;
+  let imageId = getFilename(req.query.image);
+  if(!results) {
+    if (!req.query.image)
+      return res.status(400).send('Unknown image');
+    splitImage(imageId).then(function(result) {
+      res.redirect(`/crop/results?${req.query.image}`);
+    });
+  } else {
+    let files = fs.readdirSync(`./uploadedImages`);
+    let match = new RegExp(`${imageId}_`);
+    console.log(imageId);
+    let images = files.filter(function(file) {
+      return file.match(match);
+    });
+    res.send(images);
+  }
 });
 
 app.listen(3000, () => {
   console.log(`Server is listening on port 3000`);
 });
-
