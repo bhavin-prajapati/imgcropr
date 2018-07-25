@@ -5,9 +5,6 @@ const app = express();
 const sharp = require('sharp');
 const Promise = require("bluebird");
 
-var staticPath = path.join(__dirname, '/public');
-app.use(express.static(staticPath));
-
 // default options
 app.use(fileUpload());
 
