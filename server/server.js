@@ -11,7 +11,7 @@ app.use(express.static(staticPath));
 // default options
 app.use(fileUpload());
 
-const splitImage = function (id, extention) {
+const splitImage = function (id, extention = 'jpg') {
   return new Promise(function (resolve, reject) {
     const image = sharp(`./uploadedImages/${id}.${extention}`);
     image
@@ -39,6 +39,10 @@ const splitImage = function (id, extention) {
   });
 };
 
+const getFilename = function(fileName) {
+  return fileName.split('.')[0];
+}
+
 app.post('/upload', function (req, res) {
   if (!req.files)
     return res.status(400).send('No files were uploaded.');
@@ -58,26 +62,16 @@ app.post('/upload', function (req, res) {
   });
 });
 
-app.post('/crop/:id', function (req, res) {
-  if (!req.files)
-    return res.status(400).send('No files were uploaded.');
+app.post('/crop', function (req, res) {
+  if (!req.query.image)
+    return res.status(400).send('Unknown image');
 
-  let file = req.files.imageFile;
-  const filename = file.name.split('.')[0];
-  const extention = file.name.split('.')[1];
-  const timestamp = (new Date()).valueOf();
-
-  // Use the mv() method to place the file somewhere on your server
-  file.mv(`./uploadedImages/${req.params.id}.${extention}`, function (err) {
-    if (err)
-      return res.status(500).send(err);
-    
-    splitImage(req.params.id).then((result) => {
-      res.redirect(`/crop/${req.params.id}/result`);
-    });
+  splitImage(getFilename(req.query.image)).then(function(result) {
+    res.redirect(`/crop/result?${req.query.image}`);
   });
 });
 
 app.listen(3000, () => {
   console.log(`Server is listening on port 3000`);
 });
+

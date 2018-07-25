@@ -41,10 +41,10 @@ const TemplateWrapper = ({ children, isDrawerOpen, toggleDrawer }) => (
   <ThemeProvider theme={theme}>
     <div>
       <Helmet
-        title="Gatsby Default Redux Starter"
+        title="imgcropr"
         meta={[
-          { name: 'description', content: 'Sample' },
-          { name: 'keywords', content: 'sample, something' },
+          { name: 'description', content: 'image modification tool' },
+          { name: 'keywords', content: 'image, modify' },
         ]}
       />
       <Container>

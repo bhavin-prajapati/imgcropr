@@ -1,6 +1,6 @@
 module.exports = {
   siteMetadata: {
-    title: 'Gatsby Default Redux Starter',
+    title: 'imgcropr',
   },
   plugins: [
     'gatsby-plugin-react-helmet',

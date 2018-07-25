@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "author": "Carl-Johan Kihl <carljohan.kihl@gmail.com>",
   "dependencies": {
+    "axios": "^0.18.0",
     "emotion": "^9.0.0",
     "emotion-server": "^9.0.0",
     "emotion-theming": "^9.0.0",

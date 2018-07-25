@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import styled from 'react-emotion';
 import { navigateTo, withPrefix } from 'gatsby-link';
 import { toggleDrawer as toggleDrawerAction } from '../../state/app';
+const queryString = require('query-string');
 
 const Paper = styled.aside`
   position: fixed;
@@ -36,24 +37,36 @@ const Item = styled.a`
 `;
 
 // Static data to keep it simple
-const items = [{ url: '/', name: 'Home' }, { url: '/crop/', name: 'Crop' }];
+const items = [{ url: '/', name: 'Home' }, { url: '/crop', name: 'Crop' }];
 
-const Drawer = ({ isDrawerOpen, toggleDrawer }) => (
-  <Paper isDrawerOpen={isDrawerOpen}>
-    <Header />
-    {items.map(item => (
-      <Item
-        key={item.url}
-        onClick={() => {
-          navigateTo(withPrefix(item.url));
-          toggleDrawer(false);
-        }}
-      >
-        {item.name}
-      </Item>
-    ))}
-  </Paper>
-);
+const Drawer = ({ isDrawerOpen, toggleDrawer }) => {
+
+  const params = queryString.parse(location.search);
+
+  console.log(params);
+  
+  let imageParam;
+  if(Object.keys(params).length !== 0) {
+    imageParam = `image=${params.image}` ;
+  }
+
+  return (
+    <Paper isDrawerOpen={isDrawerOpen}>
+      <Header />
+      {items.map(item => (
+        <Item
+          key={item.url}
+          onClick={() => {
+            navigateTo(withPrefix(`${item.url}?${imageParam ? imageParam : ''}`));
+            toggleDrawer(false);
+          }}
+        >
+          {item.name}
+        </Item>
+      ))}
+    </Paper>
+  )
+};
 
 export default connect(
   state => ({ isDrawerOpen: state.app.isDrawerOpen }),
