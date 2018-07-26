@@ -1,6 +1,33 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import queryString from 'query-string';
+import styled from 'react-emotion';
+
+
+const OutsideWrapper = styled.div`
+    height: auto;
+    margin:20px 60px;
+    border:1px solid blue;
+`;
+
+const InsideWrapper = styled.div`
+    position:relative;
+`;
+
+const CoveredImage = styled.img`
+    position: relative;
+    top:0px;
+    left:0px;
+    margin: 0;
+`;
+
+const CoveringCanvas = styled.canvas`
+    position: absolute;
+    top:0px;
+    left:0px;
+    width: 100%;
+    height: 100%;
+`;
 
 export class CropPage extends Component {
   constructor(props) {
@@ -15,13 +42,23 @@ export class CropPage extends Component {
   componentWillMount() {
     let params = queryString.parse(location.search);
 
+    let img = new Image;
+    img.onload = function(){
+      this.setState({
+        imageHeight: img.height,
+        imageWidth: img.width,
+      });
+    }.bind(this);
+    img.src = `http://localhost:3000/${params.image}`;
+
     this.setState({
       params,
       ctx: {},
       rects: [],
       selectRect: {},
       drag: false,
-      imageUrl: `http://localhost:3000/${params.image}`
+      imageHeight: 0,
+      imageWidth: 0,
     });
   }
 
@@ -39,20 +76,6 @@ export class CropPage extends Component {
     });
 
     this.draw(ctx);
-  }
-
-  Rectangle(ctx) {
-      var me = this;
-      this.x1 = 0;
-      this.x2 = 0;
-      this.y1 = 0;
-      this.y2 = 0;
-      this.draw = function() {
-          ctx.beginPath();
-          ctx.moveTo(me.x1, me.y1);
-          ctx.lineTo(me.x2, me.y2);
-          ctx.stroke();
-      }
   }
 
   mouseDown(e) {
@@ -173,7 +196,12 @@ export class CropPage extends Component {
       page = (
         <div>
           <p>Click the hamburger to perform to modify this image.</p>
-          <canvas ref='imageCanvas' id="canvas" width="500" height="500"></canvas>
+          <OutsideWrapper>
+              <InsideWrapper>
+                <CoveredImage src={`http://localhost:3000/${this.state.params.image}`} />
+                <CoveringCanvas id="canvas" />
+              </InsideWrapper>
+          </OutsideWrapper>
           <input type='button' value='Crop' onClick={() => { this.cropImage(params.image); }} />
         </div>
       );
