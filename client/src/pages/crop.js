@@ -9,39 +9,50 @@ export class CropPage extends Component {
     this.mouseDown = this.mouseDown.bind(this);
     this.mouseUp = this.mouseUp.bind(this);
     this.mouseMove = this.mouseMove.bind(this);
-    this.drawImage = this.drawImage.bind(this);
     this.draw = this.draw.bind(this);
   }
+
   componentWillMount() {
+    let params = queryString.parse(location.search);
+
     this.setState({
-      params: queryString.parse(location.search),
+      params,
       ctx: {},
       rects: [],
-      drag: false
+      selectRect: {},
+      drag: false,
+      imageUrl: `http://localhost:3000/${params.image}`
     });
   }
 
   componentDidMount() {
     const canvas = document.getElementById('canvas'),
-      ctx = canvas.getContext('2d'),
-      drag = false;
+      ctx = canvas.getContext('2d');
 
     canvas.addEventListener('mousedown', this.mouseDown, false);
     canvas.addEventListener('mouseup', this.mouseUp, false);
     canvas.addEventListener('mousemove', this.mouseMove, false);
 
-    let imageUrl = `http://localhost:3000/${this.state.params.image}`;
-
     this.setState({
       canvas,
-      ctx,
-      rects: [],
-      selectRect: {},
-      drag,
-      imageUrl
+      ctx
     });
 
-    this.drawImage(ctx, imageUrl);
+    this.draw(ctx);
+  }
+
+  Rectangle(ctx) {
+      var me = this;
+      this.x1 = 0;
+      this.x2 = 0;
+      this.y1 = 0;
+      this.y2 = 0;
+      this.draw = function() {
+          ctx.beginPath();
+          ctx.moveTo(me.x1, me.y1);
+          ctx.lineTo(me.x2, me.y2);
+          ctx.stroke();
+      }
   }
 
   mouseDown(e) {
@@ -81,7 +92,6 @@ export class CropPage extends Component {
   }
 
   mouseMove(e) {
-    //let canvas = this.refs.imageCanvas
     const {
       drag,
       selectRect,
@@ -103,22 +113,30 @@ export class CropPage extends Component {
     }
   }
 
-  drawImage(ctx, imageUrl) {
+  draw(ctx) {
+    const {
+      rects,
+      selectRect,
+      imageUrl
+    } = this.state
+
+    // Draw image
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     let img = new Image;
     img.onload = function(){
       ctx.drawImage(img, 0, 0);
     };
     img.src = imageUrl;
-  }
 
-  draw(ctx) {
-    const {
-      rects,
-    } = this.state
-
+    // Draw all selections
     for (let i = 0; i < rects.length; i++) {
       let r = rects[i];
       ctx.fillRect(r.startX, r.startY, r.w, r.h);
+    }
+    
+    // Draw current selection
+    if(Object.keys(selectRect).length > 0) {
+      ctx.fillRect(selectRect.startX, selectRect.startY, selectRect.w, selectRect.h);
     }
   }
   
