@@ -10,8 +10,15 @@ const OutsideWrapper = styled.div`
 `;
 
 const ImageCanvas = styled.canvas`
-    position: relative;
+    position: absolute;
     border: 1px solid blue;
+    z-index: -1;
+`;
+
+const CropCanvas = styled.canvas`
+    position: absolute;
+    border: 1px solid blue;
+    z-index: 1;
 `;
 
 export class CropPage extends Component {
@@ -50,14 +57,22 @@ export class CropPage extends Component {
   }
 
   componentDidMount() {
+
+    // Set up crop canvas
+    const cropCanvas = document.getElementById('cropCanvas');
+    const cropCtx = cropCanvas.getContext('2d');
+    cropCanvas.width = 1280;
+    cropCanvas.height = 800;
+    cropCanvas.addEventListener('mousedown', this.mouseDown, false);
+    cropCanvas.addEventListener('mouseup', this.mouseUp, false);
+    cropCanvas.addEventListener('mousemove', this.mouseMove, false);
+
+    // Load image and draw on image canvas
     const canvas = document.getElementById('imageCanvas');
     canvas.width = 1280;
     canvas.height = 800;
-
     let img = new Image;
-
     img.onload = function () {
-
       let ctx = canvas.getContext('2d');
       this.trackTransforms(ctx);
 
@@ -121,7 +136,6 @@ export class CropPage extends Component {
       canvas.addEventListener('DOMMouseScroll', handleScroll, false);
       canvas.addEventListener('mousewheel', handleScroll, false);
     }.bind(this);
-
     img.src = this.state.imageSource;
   }
 
@@ -188,27 +202,21 @@ export class CropPage extends Component {
   }
 
   mouseDown(e) {
-    const {
-      ctx
-    } = this.state;
-
-    const canvas = document.getElementById('canvas');
-
+    const cropCanvas = document.getElementById('cropCanvas');
     let currentRect = this.state.selectRect;
-    currentRect.startX = e.pageX - canvas.offsetLeft;
-    currentRect.startY = e.pageY - canvas.offsetTop;
+
+    currentRect.startX = e.pageX - cropCanvas.offsetLeft;
+    currentRect.startY = e.pageY - cropCanvas.offsetTop;
     this.setState({
       selectRect: currentRect,
       drag: true
     });
-    this.draw(ctx);
   }
 
   mouseUp() {
     const {
       rects,
       selectRect,
-      ctx
     } = this.state;
 
     let newRect = Object.assign({}, selectRect);
@@ -218,38 +226,40 @@ export class CropPage extends Component {
       drag: false,
       rects: newRects
     });
-
-    this.draw(ctx);
   }
 
   mouseMove(e) {
     const {
       drag,
       selectRect,
-      ctx
     } = this.state;
 
-    if (drag) {
-      const canvas = document.getElementById('canvas');
+    const cropCanvas = document.getElementById('cropCanvas');
+    const ctx = cropCanvas.getContext('2d');
 
+    if (drag) {
       let currentRect = selectRect;
-      currentRect.w = (e.pageX - canvas.offsetLeft) - selectRect.startX;
-      currentRect.h = (e.pageY - canvas.offsetTop) - selectRect.startY;
+      currentRect.w = (e.pageX - cropCanvas.offsetLeft) - selectRect.startX;
+      currentRect.h = (e.pageY - cropCanvas.offsetTop) - selectRect.startY;
 
       this.setState({
         selectRect: currentRect
       });
 
-      this.draw(ctx);
+      ctx.clearRect(0,0, cropCanvas.width, cropCanvas.height);
+      this.draw();
     }
   }
 
-  draw(ctx) {
+  draw() {
     const {
       rects,
       selectRect,
       imageUrl
     } = this.state
+
+    const cropCanvas = document.getElementById('cropCanvas');
+    const ctx = cropCanvas.getContext('2d');
 
     // Draw all selections
     for (let i = 0; i < rects.length; i++) {
@@ -261,6 +271,8 @@ export class CropPage extends Component {
     if (Object.keys(selectRect).length > 0) {
       ctx.rect(selectRect.startX, selectRect.startY, selectRect.w, selectRect.h);
     }
+
+    ctx.stroke();
   }
 
   cropImage(image) {
@@ -298,6 +310,7 @@ export class CropPage extends Component {
           <p>Click the hamburger to perform to modify this image.</p>
           <OutsideWrapper>
             <ImageCanvas id="imageCanvas" />
+            <CropCanvas id="cropCanvas" />
           </OutsideWrapper>
           <input type='button' value='Crop' onClick={() => { this.cropImage(params.image); }} />
         </div>
