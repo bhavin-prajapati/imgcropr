@@ -227,6 +227,8 @@ export class CropPage extends Component {
       drag: false,
       rects: newRects
     });
+
+    this.draw();
   }
 
   mouseMove(e) {
@@ -253,6 +255,7 @@ export class CropPage extends Component {
 
   draw() {
     const {
+      drag,
       rects,
       selectRect,
       imageUrl
@@ -268,8 +271,8 @@ export class CropPage extends Component {
       let r = rects[i];
 
       ctx.setLineDash([5, 2]);
-      ctx.fillStyle = 'rgba(225,225,225,0.25)';
-      ctx.lineWidth=0.25;
+      ctx.fillStyle = 'rgba(225,225,225,0)';
+      ctx.lineWidth = 1;
       ctx.fillRect(r.startX, r.startY, r.w, r.h);
       ctx.strokeRect(r.startX, r.startY, r.w, r.h)
     }
@@ -277,14 +280,17 @@ export class CropPage extends Component {
     // Draw current selection
     if (Object.keys(selectRect).length > 0) {
       ctx.setLineDash([5, 2]);
-      ctx.fillStyle = 'rgba(225,225,225,0.25)';
-      ctx.lineWidth=0.25;
+      if (drag) {
+        ctx.fillStyle = 'rgba(225,225,225,0.25)';
+        ctx.lineWidth = 0.25;
+      } else {
+        ctx.fillStyle = 'rgba(225,225,225,0)';
+        ctx.lineWidth = 1;
+      }
+      
       ctx.fillRect(selectRect.startX, selectRect.startY, selectRect.w, selectRect.h);
       ctx.strokeRect(selectRect.startX, selectRect.startY, selectRect.w, selectRect.h)
     }
-
-    // ctx.stroke();
-    // ctx.globalAlpha = 1;
   }
 
   cropImage(image) {
