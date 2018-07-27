@@ -31,6 +31,7 @@ export class CropPage extends Component {
     this.mouseMove = this.mouseMove.bind(this);
     this.draw = this.draw.bind(this);
     this.trackTransforms = this.trackTransforms.bind(this);
+    this.clearSelections = this.clearSelections.bind(this);
   }
 
   componentWillMount() {
@@ -303,6 +304,17 @@ export class CropPage extends Component {
       });
   };
 
+  clearSelections() {
+    this.setState({
+      rects: [],
+      selectRect: {}
+    });
+    
+    const cropCanvas = document.getElementById('cropCanvas');
+    const ctx = cropCanvas.getContext('2d');
+    ctx.clearRect(0,0, cropCanvas.width, cropCanvas.height);
+  }
+
   render() {
     let page = "";
     if (Object.keys(this.state.params).length === 0) {
@@ -332,6 +344,7 @@ export class CropPage extends Component {
           </OutsideWrapper>
           <br />
           <div>
+            <input type='button' value='Clear' onClick={() => { this.clearSelections(); }} />
             <input type='button' value='Crop' onClick={() => { document.getElementById('cropCanvas').style.zIndex = 1; document.getElementById('imageCanvas').style.zIndex = -1;}} />
             <input type='button' value='Move' onClick={() => { document.getElementById('cropCanvas').style.zIndex = -1; document.getElementById('imageCanvas').style.zIndex = 1; }} />
           </div>
