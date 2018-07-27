@@ -25,12 +25,12 @@ const CropCanvas = styled.canvas`
 export class CropPage extends Component {
   constructor(props) {
     super(props)
-
     this.mouseDown = this.mouseDown.bind(this);
     this.mouseUp = this.mouseUp.bind(this);
     this.mouseMove = this.mouseMove.bind(this);
     this.draw = this.draw.bind(this);
     this.trackTransforms = this.trackTransforms.bind(this);
+    this.redraw = this.redraw.bind(this);
     this.clearSelections = this.clearSelections.bind(this);
   }
 
@@ -40,8 +40,10 @@ export class CropPage extends Component {
     let img = new Image;
     img.onload = function () {
       this.setState({
-        imageHeight: img.height,
-        imageWidth: img.width,
+        initialImageHeight: img.height,
+        initialImageWidth: img.width,
+        currentImageHeight: img.height,
+        currentImageWidth: img.width,
       });
     }.bind(this);
     img.src = `http://localhost:3000/${params.image}`;
@@ -53,8 +55,11 @@ export class CropPage extends Component {
       selectRect: {},
       drag: false,
       imageSource: `http://localhost:3000/${params.image}`,
-      imageHeight: 0,
-      imageWidth: 0,
+      currentImageX: 0,
+      currentImageY: 0,
+      initialImageHeight: 0,
+      initialImageWidth: 0,
+      factor: 1
     });
   }
 
@@ -77,19 +82,7 @@ export class CropPage extends Component {
     img.onload = function () {
       let ctx = canvas.getContext('2d');
       this.trackTransforms(ctx);
-
-      function redraw() {
-        // Clear the entire canvas
-        let p1 = ctx.transformedPoint(0, 0);
-        let p2 = ctx.transformedPoint(canvas.width, canvas.height);
-        ctx.clearRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
-        ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.restore();
-        ctx.drawImage(img, 0, 0);
-      }
-      redraw();
+      this.redraw(img);
 
       let lastX = canvas.width / 2, lastY = canvas.height / 2;
       let dragStart, dragged;
@@ -109,9 +102,9 @@ export class CropPage extends Component {
         if (dragStart) {
           var pt = ctx.transformedPoint(lastX, lastY);
           ctx.translate(pt.x - dragStart.x, pt.y - dragStart.y);
-          redraw();
+          this.redraw(img);
         }
-      }, false);
+      }.bind(this), false);
 
       canvas.addEventListener('mouseup', function (evt) {
         dragStart = null;
@@ -126,8 +119,13 @@ export class CropPage extends Component {
         var factor = Math.pow(scaleFactor, clicks);
         ctx.scale(factor, factor);
         ctx.translate(-pt.x, -pt.y);
-        redraw();
-      }
+        
+        this.setState({
+          factor: ctx.getCurrentScale()
+        });
+
+        this.redraw(img, factor);
+      }.bind(this);
 
       let handleScroll = function (evt) {
         var delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
@@ -141,13 +139,38 @@ export class CropPage extends Component {
     img.src = this.state.imageSource;
   }
 
+  redraw(img, factor = this.state.factor) {
+    const canvas = document.getElementById('imageCanvas');
+    let ctx = canvas.getContext('2d');
+
+    // Clear the entire canvas
+    let p1 = ctx.transformedPoint(0, 0);
+    let p2 = ctx.transformedPoint(canvas.width, canvas.height);
+    ctx.clearRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+    ctx.drawImage(img, 0, 0);
+
+    this.setState({
+      currentImageX: -p1.x,
+      currentImageY: -p1.y,
+      currentImageWidth: this.state.initialImageWidth*factor,
+      currentImageHeight: this.state.initialImageHeight*factor
+    });
+    console.log(this.state);
+  }
+
   trackTransforms(ctx) {
     var svg = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
     var xform = svg.createSVGMatrix();
     ctx.getTransform = function () { return xform; };
+    ctx.getCurrentScale = function () { return xform.currentScale; };
 
     var savedTransforms = [];
     var save = ctx.save;
+
     ctx.save = function () {
       savedTransforms.push(xform.translate(0, 0));
       return save.call(ctx);

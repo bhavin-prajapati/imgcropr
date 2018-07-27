@@ -42,8 +42,6 @@ const items = [{ url: '/', name: 'Home' }, { url: '/crop', name: 'Crop' }];
 const Drawer = ({ isDrawerOpen, toggleDrawer }) => {
 
   const params = queryString.parse(location.search);
-
-  console.log(params);
   
   let imageParam;
   if(Object.keys(params).length !== 0) {
