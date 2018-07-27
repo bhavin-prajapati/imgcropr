@@ -247,7 +247,6 @@ export class CropPage extends Component {
         selectRect: currentRect
       });
 
-      ctx.clearRect(0,0, cropCanvas.width, cropCanvas.height);
       this.draw();
     }
   }
@@ -262,18 +261,28 @@ export class CropPage extends Component {
     const cropCanvas = document.getElementById('cropCanvas');
     const ctx = cropCanvas.getContext('2d');
 
+    ctx.clearRect(0,0, cropCanvas.width, cropCanvas.height);
+
     // Draw all selections
     for (let i = 0; i < rects.length; i++) {
       let r = rects[i];
-      ctx.rect(r.startX, r.startY, r.w, r.h);
+
+      ctx.setLineDash([5, 15]);
+      ctx.fillStyle = 'rgba(225,225,225,0.5)';
+      ctx.fillRect(r.startX, r.startY, r.w, r.h);
+      ctx.strokeRect(r.startX, r.startY, r.w, r.h)
     }
 
     // Draw current selection
     if (Object.keys(selectRect).length > 0) {
-      ctx.rect(selectRect.startX, selectRect.startY, selectRect.w, selectRect.h);
+      ctx.setLineDash([5, 15]);
+      ctx.fillStyle = 'rgba(225,225,225,0.5)';
+      ctx.fillRect(selectRect.startX, selectRect.startY, selectRect.w, selectRect.h);
+      ctx.strokeRect(selectRect.startX, selectRect.startY, selectRect.w, selectRect.h)
     }
 
-    ctx.stroke();
+    // ctx.stroke();
+    // ctx.globalAlpha = 1;
   }
 
   cropImage(image) {
