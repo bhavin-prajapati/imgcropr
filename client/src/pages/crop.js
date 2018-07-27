@@ -59,7 +59,8 @@ export class CropPage extends Component {
       currentImageY: 0,
       initialImageHeight: 0,
       initialImageWidth: 0,
-      factor: 1
+      factor: 1,
+      clicks: 0
     });
   }
 
@@ -102,7 +103,7 @@ export class CropPage extends Component {
         if (dragStart) {
           var pt = ctx.transformedPoint(lastX, lastY);
           ctx.translate(pt.x - dragStart.x, pt.y - dragStart.y);
-          this.redraw(img);
+          this.redraw(img, 1);
         }
       }.bind(this), false);
 
@@ -121,7 +122,8 @@ export class CropPage extends Component {
         ctx.translate(-pt.x, -pt.y);
         
         this.setState({
-          factor: ctx.getCurrentScale()
+          clicks: this.state.clicks + clicks,
+          factor: Math.pow(scaleFactor, this.state.clicks)
         });
 
         this.redraw(img, factor);
@@ -156,8 +158,8 @@ export class CropPage extends Component {
     this.setState({
       currentImageX: -p1.x,
       currentImageY: -p1.y,
-      currentImageWidth: this.state.initialImageWidth*factor,
-      currentImageHeight: this.state.initialImageHeight*factor
+      currentImageWidth: this.state.currentImageWidth*factor,
+      currentImageHeight: this.state.currentImageHeight*factor
     });
     console.log(this.state);
   }
