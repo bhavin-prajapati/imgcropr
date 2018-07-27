@@ -5,8 +5,9 @@ import styled from 'react-emotion';
 
 
 const OutsideWrapper = styled.div`
-    height: auto;
-    margin:20px 60px;
+    display: block;
+    position: inherit;
+    height: 800px;
 `;
 
 const ImageCanvas = styled.canvas`
@@ -312,7 +313,11 @@ export class CropPage extends Component {
             <ImageCanvas id="imageCanvas" />
             <CropCanvas id="cropCanvas" />
           </OutsideWrapper>
-          <input type='button' value='Crop' onClick={() => { this.cropImage(params.image); }} />
+          <br />
+          <div>
+            <input type='button' value='Crop' onClick={() => { document.getElementById('cropCanvas').style.zIndex = 1; document.getElementById('imageCanvas').style.zIndex = -1;}} />
+            <input type='button' value='Move' onClick={() => { document.getElementById('cropCanvas').style.zIndex = -1; document.getElementById('imageCanvas').style.zIndex = 1; }} />
+          </div>
         </div>
       );
     }
