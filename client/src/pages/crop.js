@@ -267,16 +267,18 @@ export class CropPage extends Component {
     for (let i = 0; i < rects.length; i++) {
       let r = rects[i];
 
-      ctx.setLineDash([5, 15]);
-      ctx.fillStyle = 'rgba(225,225,225,0.5)';
+      ctx.setLineDash([5, 2]);
+      ctx.fillStyle = 'rgba(225,225,225,0.25)';
+      ctx.lineWidth=0.25;
       ctx.fillRect(r.startX, r.startY, r.w, r.h);
       ctx.strokeRect(r.startX, r.startY, r.w, r.h)
     }
 
     // Draw current selection
     if (Object.keys(selectRect).length > 0) {
-      ctx.setLineDash([5, 15]);
-      ctx.fillStyle = 'rgba(225,225,225,0.5)';
+      ctx.setLineDash([5, 2]);
+      ctx.fillStyle = 'rgba(225,225,225,0.25)';
+      ctx.lineWidth=0.25;
       ctx.fillRect(selectRect.startX, selectRect.startY, selectRect.w, selectRect.h);
       ctx.strokeRect(selectRect.startX, selectRect.startY, selectRect.w, selectRect.h)
     }
